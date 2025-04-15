@@ -2,6 +2,9 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/songquanpeng/one-api/common/config"
 	"github.com/songquanpeng/one-api/common/ctxkey"
@@ -9,8 +12,6 @@ import (
 	"github.com/songquanpeng/one-api/common/network"
 	"github.com/songquanpeng/one-api/common/random"
 	"github.com/songquanpeng/one-api/model"
-	"net/http"
-	"strconv"
 )
 
 func GetAllTokens(c *gin.Context) {
@@ -135,6 +136,17 @@ func AddToken(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
 			"message": fmt.Sprintf("参数错误：%s", err.Error()),
+		})
+		return
+	}
+
+	// 检查该用户下是否存在重名令牌
+	userId := c.GetInt(ctxkey.Id)
+	existingToken, err := model.GetTokenByName(userId, token.Name)
+	if err == nil && existingToken != nil && existingToken.Id != 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "该令牌名称已存在，请选择其他名称",
 		})
 		return
 	}

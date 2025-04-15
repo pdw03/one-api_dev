@@ -301,3 +301,12 @@ func PostConsumeTokenQuota(tokenId int, quota int64) (err error) {
 	}
 	return nil
 }
+
+func GetTokenByName(userId int, name string) (*Token, error) {
+	var token Token
+	err := DB.Where("user_id = ? AND name = ?", userId, name).First(&token).Error
+	if err != nil {
+		return nil, err
+	}
+	return &token, nil
+}
